@@ -8,7 +8,8 @@
 #include <glib-unix.h>
 #include <systemd/sd-bus.h>
 #include <systemd/sd-event.h>
-
+#include <stdio.h>
+#include <unistd.h>
 #include "app_launcher.h"
 #include "applaunch-dbus.h"
 
@@ -51,13 +52,21 @@ static void name_lost_cb(GDBusConnection *connection, const gchar *name,
     g_critical("Lost the '%s' service name, quitting...", name);
     g_main_loop_quit(main_loop);
 }
+    FILE *filePointer;
 
 int main(int argc, char *argv[])
 {
     g_unix_signal_add(SIGTERM, quit_cb, NULL);
     g_unix_signal_add(SIGINT, quit_cb, NULL);
-
     main_loop = g_main_loop_new(NULL, FALSE);
+
+    char str[] = "applaunchd";
+
+    // opening the file in write mode
+    filePointer = fopen("/tmp/applaunchd.txt.txt", "+w");
+    fwrite(str, 1, sizeof(str) - 1, filePointer);
+    fsync(fileno(filePointer));
+
 
     AppLauncher *launcher = app_launcher_get_default();
 

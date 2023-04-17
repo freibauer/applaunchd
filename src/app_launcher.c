@@ -7,16 +7,18 @@
 #include "app_info.h"
 #include "app_launcher.h"
 #include "systemd_manager.h"
+#include <stdio.h>
+#include <unistd.h> 
+
 
 #include <syslog.h>
 
 
 static void logme(char *x)
 {
-
-    openlog ("applaunchd", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
-    syslog (LOG_INFO,"%s",x);
-    closelog ();
+    extern FILE *filePointer;
+    fwrite(x, 1, sizeof(x) - 1, filePointer);
+    fsync(fileno(filePointer));
 }
 
 
