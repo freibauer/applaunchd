@@ -8,12 +8,27 @@
 #include "app_launcher.h"
 #include "systemd_manager.h"
 
+#include <syslog.h>
+
+
+static void logme(char *x)
+{
+
+    openlog ("applaunchd", LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL1);
+    syslog (LOG_INFO,"%s",x);
+    closelog ();
+}
+
+
 typedef struct _AppLauncher {
     applaunchdAppLaunchSkeleton parent;
 
     SystemdManager *systemd_manager;
 
 } AppLauncher;
+
+
+
 
 static void app_launcher_iface_init(applaunchdAppLaunchIface *iface);
 
@@ -103,6 +118,11 @@ static gboolean app_launcher_handle_start(applaunchdAppLaunch *object,
         return FALSE;
     }
 
+    char buf[128];
+    sprintf(buf,"start app=%s",app_id);
+    logme(buf);
+    
+
     app_launcher_start_app(self, app);
     applaunchd_app_launch_complete_start(object, invocation);
 
@@ -160,6 +180,11 @@ static void app_launcher_terminated_cb(AppLauncher *self,
 {
     applaunchdAppLaunch *iface = APPLAUNCHD_APP_LAUNCH(self);
     g_return_if_fail(APPLAUNCHD_IS_APP_LAUNCH(iface));
+
+
+    char buf[128];
+    sprintf(buf,"terminated app=%s",app_id);
+    logme(buf);
 
     g_debug("Application '%s' terminated", app_id);
     /*
